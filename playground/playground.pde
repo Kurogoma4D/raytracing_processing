@@ -13,12 +13,16 @@ Spectrum secondLightPower = new Spectrum(3500, 3500, 3500);
 
 Spectrum diffuseColor = new Spectrum(1, 0.5, 0.25);
 
+PImage background;
+
 Scene scene = new Scene();
 
 void setup () {
   size(800, 800);
   frameRate(60);
+  background = loadImage("displacement.png");
   initScene();
+  noLoop();
 }
 
 void draw () {
@@ -28,32 +32,46 @@ void draw () {
       set(x, y, c);
     }
   }
-
 }
 
 void initScene() {
-  scene.addIntersectable(
-    new Sphere(new Vec(-2, 0, 0), 0.8, new Material(new Spectrum(0.9, 0.1, 0.5)))
-    );
-  scene.addIntersectable(
-    new Sphere(new Vec(0, 0, 0), 0.6, new Material(new Spectrum(0.1, 0.9, 0.5)))
-    );
-  scene.addIntersectable(
-    new Sphere(new Vec(2, 0, 0), 0.6, new Material(new Spectrum(0.1, 0.5, 0.9)))
-    );
+
+  Material mtlSphere = new Material(new Spectrum(0.1, 0.5, 0.9));
+  //mtlSphere.reflective = 0.6;
+  mtlSphere.refractive = 0.9;
+  mtlSphere.refractiveIndex = 1.5;
+
+  scene.addIntersectable(new Sphere(new Vec(0, 0, 0), 1, mtlSphere));
+
+  Material mtlFloor1 = new Material(new Spectrum(0.5, 0.5, 0.5));
+  Material mtlFloor2 = new Material(new Spectrum(0.2, 0.2, 0.2));
 
   scene.addIntersectable(
-    new Plane(new Vec(0, -0.8, 0), new Vec(0, 1, 0), new Material(new Spectrum(0.8, 0.8, 0.8)))
+    new CheckedObj(new Plane(
+    new Vec(0, -1, 0), 
+    new Vec(0, 1, 0), 
+    mtlFloor1
+    ), 
+    1, mtlFloor2
+    )
     );
+  
+  Material mtlWall = new Material(new Spectrum(0.5, 0.5, 0.5));
+  
+  scene.addIntersectable(
+    new TexturedObj(
+      new Plane(new Vec(0, 0, -5), new Vec(0, 0, 1), mtlWall),
+      background,
+      10,
+      new Vec(-5, -5, 0),
+      new Vec(1, 0, 0),
+      new Vec(0, 1, 0)
+    )
+  );
 
   scene.addLight(new Light(
-    new Vec(100, 100, 100),
-    new Spectrum(400000, 100000, 400000)
-    ));
-
-  scene.addLight(new Light(
-    new Vec(-100, 100, 100),
-    new Spectrum(100000, 400000, 100000)
+    new Vec(100, 100, 100), 
+    new Spectrum(800000, 800000, 800000)
     ));
 }
 
@@ -69,6 +87,6 @@ Ray calcPrimaryRay (int x, int y) {
 
 color calcPixelColor (int x, int y) {
   Ray ray = calcPrimaryRay(x, y);
-  Spectrum sp = scene.trace(ray);
+  Spectrum sp = scene.trace(ray, 0);
   return sp.toColor();
 }
