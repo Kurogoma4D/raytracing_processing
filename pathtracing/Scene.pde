@@ -1,5 +1,6 @@
 final int DEPTH_MAX = 10;
 final float VACUUM_REFRACTIVE_INDEX = 1.0;
+final Spectrum COLOR_SKY = new Spectrum(0.7, 0.7, 0.7);
 
 class Scene {
   ArrayList<Intersectable> objList = new ArrayList<Intersectable>();
@@ -20,35 +21,16 @@ class Scene {
     if (DEPTH_MAX < depth) return BLACK;
 
     Intersection intersect = findNearestIntersection(ray);
-    if (!intersect.hit()) return BLACK;
+    if (!intersect.hit()) return COLOR_SKY;
 
     Material m = intersect.material;
-    Spectrum l = BLACK;
-
-    if (intersect.n.dot(ray.dir) < 0) {
-      float ks = m.reflective;
-      if (0 < ks) {
-        Vec r = ray.dir.reflect(intersect.n);
-        Spectrum c = trace(new Ray(intersect.p, r), depth + 1);
-        l = l.add(c.scale(ks).mul(m.diffuse));
-      }
-      
-      float kt = m.refractive;
-      if (0 < kt) {
-        Vec r = ray.dir.refract(intersect.n, VACUUM_REFRACTIVE_INDEX / m.refractiveIndex);
-        Spectrum c = trace(new Ray(intersect.p, r), depth + 1);
-        l = l.add(c.scale(kt).mul(m.diffuse));
-      }
-
-      float kd = 1.0 - ks;
-      if (0 < kd) {
-        Spectrum c = lighting(intersect.p, intersect.n, intersect.material);
-        l = l.add(c.scale(kd));
-      }
-    } else {
-      Vec r = ray.dir.refract(intersect.n.neg(), m.refractiveIndex / VACUUM_REFRACTIVE_INDEX);
-      l = trace(new Ray(intersect.p, r), depth + 1);
-    }
+    
+    Vec r = intersect.n.randomHemisphere();
+    Spectrum li = trace(new Ray(intersect.p, r), depth + 1);
+    
+    Spectrum fr = m.diffuse.scale(1.0 / PI);
+    float factor = 2.0 * PI * intersect.n.dot(r);
+    Spectrum l = li.mul(fr).scale(factor);
 
     return l;
   }

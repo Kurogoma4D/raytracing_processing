@@ -1,17 +1,7 @@
 final float NO_HIT = Float.POSITIVE_INFINITY;
+final int SAMPLES = 100;
 
 Vec eye = new Vec(0, 0, 7);
-Vec sphereCenter = new Vec(0, 0, 0);
-float sphereRadius = 1;
-
-Vec lightPos = new Vec(-10, 10, 10);
-//float lightPower = 2000;
-Spectrum lightPower = new Spectrum(4000, 4000, 4000);
-
-Vec secondLight = new Vec(0, 10, 20);
-Spectrum secondLightPower = new Spectrum(3500, 3500, 3500);
-
-Spectrum diffuseColor = new Spectrum(1, 0.5, 0.25);
 
 PImage background;
 
@@ -75,7 +65,12 @@ Ray calcPrimaryRay (int x, int y) {
 }
 
 color calcPixelColor (int x, int y) {
-  Ray ray = calcPrimaryRay(x, y);
-  Spectrum sp = scene.trace(ray, 0);
-  return sp.toColor();
+  Spectrum sum = BLACK;
+
+  for (int i = 0; i < SAMPLES; i++) {
+    Ray ray = calcPrimaryRay(x, y);
+    sum = sum.add(scene.trace(ray, 0));
+  }
+
+  return sum.scale(1.0 / SAMPLES).toColor();
 }
