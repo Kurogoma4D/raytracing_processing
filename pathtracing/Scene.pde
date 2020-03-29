@@ -1,10 +1,10 @@
 final int DEPTH_MAX = 10;
 final float VACUUM_REFRACTIVE_INDEX = 1.0;
-final Spectrum COLOR_SKY = new Spectrum(0.7, 0.7, 0.7);
 
 class Scene {
   ArrayList<Intersectable> objList = new ArrayList<Intersectable>();
   ArrayList<Light> lightList = new ArrayList<Light>();
+  Spectrum color_sky = new Spectrum(0.7, 0.7, 0.7);
 
   Scene() {
   }
@@ -16,12 +16,16 @@ class Scene {
   void addLight (Light light) {
     this.lightList.add(light);
   }
+  
+  void setSkyColor (Spectrum newColor) {
+    color_sky = newColor;
+  }
 
   Spectrum trace (Ray ray, int depth) {
     if (DEPTH_MAX < depth) return BLACK;
 
     Intersection intersect = findNearestIntersection(ray);
-    if (!intersect.hit()) return COLOR_SKY;
+    if (!intersect.hit()) return color_sky;
 
     Material m = intersect.material;
     
