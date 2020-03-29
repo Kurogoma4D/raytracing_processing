@@ -16,7 +16,7 @@ class Scene {
   void addLight (Light light) {
     this.lightList.add(light);
   }
-  
+
   void setSkyColor (Spectrum newColor) {
     color_sky = newColor;
   }
@@ -28,15 +28,40 @@ class Scene {
     if (!intersect.hit()) return color_sky;
 
     Material m = intersect.material;
+    float dot = intersect.n.dot(ray.dir);
     
-    Vec r = intersect.n.randomHemisphere();
-    Spectrum li = trace(new Ray(intersect.p, r), depth + 1);
-    
-    Spectrum fr = m.diffuse.scale(1.0 / PI);
-    float factor = 2.0 * PI * intersect.n.dot(r);
-    Spectrum l = li.mul(fr).scale(factor);
+    if (dot < 0) {
+      Spectrum col = interactSurface(ray.dir, intersect.p, intersect.n, m, VACUUM_REFRACTIVE_INDEX / m.refractiveIndex, depth);
+      return col.add(m.emissive.scale(-dot));
+    } else {
+      return interactSurface(ray.dir, intersect.p, intersect.n.neg(), m, m.refractiveIndex / VACUUM_REFRACTIVE_INDEX, depth);
+    }
+  }
 
-    return l;
+  Spectrum interactSurface (Vec rayDir, Vec p, Vec n, Material m, float eta, int depth) {
+    float ks = m.reflective;
+    float kt = m.refractive;
+
+    float t = random(0.0, 1.0);
+
+    if (t < ks) {
+      Vec r = rayDir.reflect(n);
+      Spectrum c = trace(new Ray(p, r), depth + 1);
+      return c.mul(m.diffuse);
+    } else if (t < ks + kt) {
+      Vec r = rayDir.refract(n, eta);
+      Spectrum c = trace(new Ray(p, r), depth + 1);
+      return c.mul(m.diffuse);
+    } else {
+      Vec r = n.randomHemisphere();
+      Spectrum li = trace(new Ray(p, r), depth + 1);
+
+      Spectrum fr = m.diffuse.scale(1.0 / PI);
+      float factor = 2.0 * PI * n.dot(r);
+      Spectrum l = li.mul(fr).scale(factor);
+
+      return l;
+    }
   }
 
   Intersection findNearestIntersection(Ray ray) {

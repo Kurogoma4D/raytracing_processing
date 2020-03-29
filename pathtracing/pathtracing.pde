@@ -24,22 +24,32 @@ void draw () {
 void initScene() {
   scene.setSkyColor(new Spectrum(0.8, 0.86, 0.95));
 
+  Material mtl1 = new Material(new Spectrum(0.7, 0.3, 0.9));
   scene.addIntersectable(
     new Sphere(new Vec(-2.2, 0, 0), 
-    1, 
-    new Material(new Spectrum(0.7, 0.3, 0.9)))
+    1, mtl1)
     );
 
+  Material mtl2 = new Material(new Spectrum(0.9, 0.7, 0.3));
+  mtl2.reflective = 0.8;
   scene.addIntersectable(
     new Sphere(new Vec(0, 0, 0), 
-    1, 
-    new Material(new Spectrum(0.9, 0.7, 0.3)))
+    1, mtl2)
     );
 
+  Material mtl3 = new Material(new Spectrum(0.3, 0.3, 0.7));
+  mtl3.refractive = 0.8;
+  mtl3.refractiveIndex = 1.5;
   scene.addIntersectable(
     new Sphere(new Vec(2.2, 0, 0), 
-    1, 
-    new Material(new Spectrum(0.3, 0.3, 0.7)))
+    1, mtl3)
+    );
+  
+  Material mtlLight = new Material(new Spectrum(0.0, 0.0, 0.0));
+  mtlLight.emissive = new Spectrum(30.0, 20.0, 10.0);
+  scene.addIntersectable(
+    new Sphere(new Vec(0, 4, 0),
+    1, mtlLight)
     );
 
   Material mtlFloor1 = new Material(new Spectrum(0.9, 0.9, 0.9));
@@ -54,10 +64,10 @@ void initScene() {
 
 void initCamera() {
   camera.lookAt(
-    new Vec(4.0, 1.5, 6.0), 
+    new Vec(0, 0, 7.0), 
     new Vec(0.0, 0.0, 0.0), 
     new Vec(0.0, 1.0, 0.0), 
-    radians(40.0), 
+    radians(60.0), 
     width, 
     height);
 }
