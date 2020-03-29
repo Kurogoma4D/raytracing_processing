@@ -6,22 +6,22 @@ Vec eye = new Vec(0, 0, 7);
 PImage background;
 
 Scene scene = new Scene();
+int y = 0;
 
 void setup () {
   size(800, 800);
   frameRate(60);
   background = loadImage("displacement.png");
   initScene();
-  noLoop();
 }
 
 void draw () {
-  for (int y = 0; y < height; y ++) {
-    for (int x = 0; x < width; x ++) {
-      color c = calcPixelColor(x, y);
-      set(x, y, c);
-    }
+  for (int x = 0; x < width; x ++) {
+    color c = calcPixelColor(x, y);
+    set(x, y, c);
   }
+  y++;
+  if (y > height) noLoop();
 }
 
 void initScene() {
@@ -57,8 +57,8 @@ void initScene() {
 Ray calcPrimaryRay (int x, int y) {
   float imagePlane = height;
 
-  float dx = x + 0.5 - width / 2;
-  float dy = -(y + 0.5 - height / 2);
+  float dx = x + random(0.0, 1.0) - width / 2;
+  float dy = -(y + random(0.0, 1.0) - height / 2);
   float dz = -imagePlane;
 
   return new Ray(eye, new Vec(dx, dy, dz).normalize());
